@@ -1,0 +1,37 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Document</title>
+</head>
+<body>
+<div>
+    <div>
+        <label>Nome</label>
+        <input type="text" name="nome" id="nome">
+    </div>
+
+    <div>
+        <label>Localização</label>
+        <input type="text" name="localização" id="localização">
+    </div>
+    <button onclick="enviar()">Enviar</button>
+</div>
+<script>
+    const nome = document.getElementById("nome");
+    const localização = document.getElementById("localização");
+
+    function enviar(){
+        fetch("/restaurantes", {
+            method: "post",
+            headers: {
+                "content-type": "application/json",
+                "accept": "application/json",
+            },
+            body:JSON.stringify({nome: nome.value, localização:localização.value})
+        })
+    }
+</script>
+</body>
+</html>
