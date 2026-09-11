@@ -9,60 +9,30 @@ from models.cliente import Cliente
 
 from fastapi.staticfiles import StaticFiles
 
-app = FastAPI(title="67food")
+"""
+Nome: 67food
+
+"""
+from sqlite3 import Connection
+
+from fastapi import FastAPI, Depends
+from fastapi.staticfiles import StaticFiles
+
+import bd
+from schemas import Restaurante
+
+
+app = FastAPI(title="98food")
 app.mount("/static", StaticFiles(directory="./static"))
 
-app.add_middleware(
-CORSMiddleware,
-allow_origins=["*"], # Explicit origins
-allow_credentials=True, # Allow cookies/auth headers
-allow_methods=["*"], # Allow all HTTP methods
-allow_headers=["*"], # Allow all headers
-)
+restaurantes = []
 
 
-clientes = []
-
-@app.post("/clientes",
-            tags=["clientes"])
-def cria_conta(cliente: Cliente) -> Cliente:
-    """Criar conta do cliente"""
-    clientes.append(cliente)
-    return cliente
-
-@app.get("/clientes",
-            tags=["clientes"])
-def listar_contas() -> list[Cliente]:
-    """Criar conta do cliente"""
-    return clientes
-
-
-@app.post("/estabelecimento",
-            tags=["estabelecimento"])
-def cria_estabelecimento(restaurante: Restaurante):
-    """Criar conta do estabelecimento"""
-    bd.inserir_restaurantes(restaurante.nome, restaurante.local, None)
-
-
-@app.post("/produtos",
-            tags=["produtos"])
-def cadastra_produto():
-    """Cadastrar produtos"""
-    pass
-
-@app.get(/restaurante_especifico)
-
-def obter_restaurante(id_restaurante, nome):
-    cursor = con.execute(f"""SELECT * from RESTAURANTES
-                             WHERE id = {id_restaurante} OR nome = {nome};""")
-    return cursor.fetchall()
-
-
-@app.get("/estabelecimento",
-         tags=["estabelecimento"])
-def obter_todos_os_restaurantes() -> list[Restaurante]:
+@app.get("/restaurantes",
+         tags=["restaurantes"])
+def obter_todos_os_restaurantes(con: Connection = Depends(bd.obter_conexão)) -> list[Restaurante]:
     """Listar todos os restaurantes"""
-    restaurantes = bd.obter_restaurantes()
+    restaurantes = bd.obter_restaurantes(con)
     return [
         Restaurante(
             id=id,
@@ -73,18 +43,18 @@ def obter_todos_os_restaurantes() -> list[Restaurante]:
     ]
 
 
+@app.post("/restaurantes",
+         tags=["restaurantes"])
+def criar_restaurante(restaurante: Restaurante, con: Connection = Depends(bd.obter_conexão)) -> Restaurante:
+    """Criar restaurante"""
+    bd.inserir_restaurante(restaurante)
+    return restaurante
 
-@app.get("/consulta_produtos", 
-         tags=["consulta_produtos"])
-def consultar_produtos():
+
+@app.get("/restaurantes/{id}",
+         tags=["restaurantes"])
+def obter_informação_de_restaurante(id: str | None = None, nome: str | None = None, 
+                                    con: Connection = Depends(bd.obter_conexão)):
     """Listar todos os restaurantes"""
-
-
-    return []
-
-@app.put("/atualizar",
-         tags=["atualizar"])
-def atualizar_cadastro():
-    """Atualiza o cadastro do cliente"""
-    return []
+    return bd.obter_restaurante(id, nome)
     
